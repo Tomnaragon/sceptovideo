@@ -51,4 +51,9 @@ def test_provided_function_callable():
     
 def test_provided_function_callable():
     im = np.array([[1, 2, 3], [1, 2, 3]])
-    assert segmentation._check_function_input(im, thresh_func=skimage.filters.threshold_adaptive) == True
+    args = (3)
+    assert segmentation._check_function_input(im, thresh_func=skimage.filters.threshold_local, *args) == True
+
+def test_provided_function_returns_float():
+    
+    pass
