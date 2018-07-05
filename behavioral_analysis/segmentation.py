@@ -7,7 +7,37 @@ def _check_image_input(im):
         raise RuntimeError("Need to provide a numpy array, image has type " + str(type(im)))
     if not len(im.shape) == 2:
         raise RuntimeError("Need to provide an array with shape (n, m). Provided array has shape " + str(im.shape))
+    if not _check_numpy_array_type(im):
+        raise RuntimeError("Provided image has unsuported type: " + str(im.dtype))
+    if np.any(np.isnan(im)):
+        raise RuntimeError("Data contains a nan, decide how to handle missing data")
+    if np.any(np.isinf(im)):
+        raise RuntimeError("Data contains an np.inf, decide how to handle infinite values")
+    if np.isclose(im.max(), 0) and np.isclose(im.min(), 0):
+        raise RuntimeError("Inputed image is near to zero for all values")
+    if np.isclose((im.max() - im.min()), 0):
+        raise RuntimeError("Inputed image has nearly the same value for all pixels. Check input")
 
+def _check_numpy_array_type(im):
+    check_type = str(im.dtype)
+    
+    ok_types = ('int8',
+                'int16',
+                'int32',
+                'int64',
+                'uint8',
+                'uint16',
+                'uint32',
+                'uint64',
+                'float16',
+                'float32',
+                'float64')
+    
+    if check_type in ok_types:
+        return True
+    
+    return False
+    
 def _check_numeric_types(number):
     if (isinstance(number, float)       or
         isinstance(number, int)         or
@@ -21,7 +51,7 @@ def _check_numeric_types(number):
         isinstance(number, np.float128) ):
         return True
     return False
-        
+
 def _check_function_input(im, thresh_func, args):
     
     if not callable(thresh_func):
@@ -73,10 +103,12 @@ def bg_subtract(im1, im2):
     return (im_no_bg)
 
 def normalize_convert_im(im):
+    _check_image_input(im)
+    
     im = skimage.img_as_float(im)
     im_norm = im - im.min()
-    im_norm = im / im.max()
-    return im
+    im_norm = im_norm / im_norm.max()
+    return im_norm
 
 def segment(im, thresh_func=skimage.filters.threshold_otsu, args=()):
     """Function to threshold an image using skimage functions. 

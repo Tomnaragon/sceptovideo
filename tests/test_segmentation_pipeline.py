@@ -4,6 +4,9 @@ sys.path.append("../behavioral_analysis")
 import segmentation
 import pytest
 import skimage.filters
+from hypothesis import given
+import hypothesis.strategies
+import hypothesis.extra.numpy
 
 # test functions for simple segmentation based tracking code
 
@@ -90,6 +93,72 @@ def test_bg_subtract_im_dims():
     excinfo.match("The provided images have different dimension \
         im1: \(2, 3\), im2: \(3, 3\)")
     
+def test_im_normalization_range():
+    im = np.array([[1, 2, 3], [1, 2, 3]])
+    new_im = segmentation.normalize_convert_im(im)
+    assert new_im.max() == 1
+    assert new_im.min() == 0
+   
+@given(hypothesis.extra.numpy.arrays(dtype=int, shape=(50,50)))
+def test_im_normalization_range_int(im):
     
+    if np.isclose(im.max(), 0) and np.isclose(im.min(), 0):
+        with pytest.raises(RuntimeError) as excinfo:
+            segmentation.normalize_convert_im(im)
+        excinfo.match("Inputed image is near to zero for all values")
+    elif np.isclose((im.max() - im.min()), 0):
+        with pytest.raises(RuntimeError) as excinfo:
+            segmentation.normalize_convert_im(im)
+        excinfo.match("Inputed image has nearly the same value for all pixels. Check input")
+    else:
+        new_im = segmentation.normalize_convert_im(im)
+        assert new_im.max() == 1
+        assert new_im.min() == 0
+        
+@given(hypothesis.extra.numpy.arrays(dtype=float, shape=(50,50)))
+def test_im_normalization_range_float(im):
     
- 
+    if np.isclose(im.max(), 0) and np.isclose(im.min(), 0):
+        with pytest.raises(RuntimeError) as excinfo:
+            segmentation.normalize_convert_im(im)
+        excinfo.match("Inputed image is near to zero for all values")
+    elif np.any(np.isnan(im)):
+        with pytest.raises(RuntimeError) as excinfo:
+            segmentation.normalize_convert_im(im)
+        excinfo.match("Data contains a nan, decide how to handle missing data")
+    elif np.any(np.isinf(im)):
+        with pytest.raises(RuntimeError) as excinfo:
+            segmentation.normalize_convert_im(im)
+        excinfo.match("Data contains an np.inf, decide how to handle infinite values")
+    elif np.isclose((im.max() - im.min()), 0):
+        with pytest.raises(RuntimeError) as excinfo:
+            segmentation.normalize_convert_im(im)
+        excinfo.match("Inputed image has nearly the same value for all pixels. Check input")
+    else:
+        new_im = segmentation.normalize_convert_im(im)
+        assert new_im.max() == 1
+        assert new_im.min() == 0
+        
+@given(hypothesis.extra.numpy.arrays(dtype=np.float128, shape=(50,50)))
+def test_im_normalization_range_float128(im):
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation.normalize_convert_im(im)
+    excinfo.match("Provided image has unsuported type: float128")
+
+def test_im_near_zero():
+    im = np.array([[0, 0, 0], [0, 0, 0]])
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation.segment(im)
+    excinfo.match("Inputed image is near to zero for all values")
+
+def test_im_has_nan():
+    im = np.array([[np.nan, 0, 0], [0, 0, 0]])
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation.segment(im)
+    excinfo.match("Data contains a nan, decide how to handle missing data")
+
+def test_im_has_nan():
+    im = np.array([[np.inf, 0, 0], [0, 0, 0]])
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation.segment(im)
+    excinfo.match("Data contains an np.inf, decide how to handle infinite values")
