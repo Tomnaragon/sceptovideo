@@ -162,3 +162,68 @@ def test_im_has_nan():
     with pytest.raises(RuntimeError) as excinfo:
         segmentation.segment(im)
     excinfo.match("Data contains an np.inf, decide how to handle infinite values")
+       
+def test_int_types():
+    assert segmentation._check_int_types(1.0) == False
+    assert segmentation._check_int_types(1) == True
+    assert segmentation._check_int_types(np.int32(1)) == True
+    assert segmentation._check_int_types(np.uint64(1)) == True
+    
+@given(hypothesis.extra.numpy.arrays(dtype=np.float128, shape=(10,10)))
+def test_numpy_array_int_types(ar):
+    segmentation._check_numpy_array_int_types(ar) == False
+    
+@given(hypothesis.strategies.tuples(hypothesis.strategies.integers(), hypothesis.strategies.integers()))
+def test_array_like_tuple(tu):
+    segmentation._check_array_like(tu) == True
+
+@given(hypothesis.strategies.lists())
+def test_array_like_list(li):
+    segmentation._check_array_like(li) == True
+    
+@given(hypothesis.extra.numpy.arrays(dtype=np.float128, shape=(10,10)))
+def test_array_like_nparray(ar):
+    segmentation._check_array_like(ar) == True
+    
+def test_numpy_array_string_types():
+    segmentation._check_numpy_array_string_types(np.array(['rectangle', 'ellipse'])) == True
+
+def test_check_roi_inputs():
+    
+    roi_kind = ['ellipse', 'rectangle']
+    cent = [1, 2]
+    width = [1, 2]
+    height = [1, 2]
+    outside_roi = 'max'
+    
+    with pytest.raises(RuntimeError) as excinfo:
+            segmentation._check_roi_inputs('hello', cent, width, height, outside_roi)
+    excinfo.match("The given roi kind object is not array like, it is " + str(type('hello')))
+    
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs(roi_kind, 1, width, height, outside_roi)               
+    excinfo.match("The given roi centers object object is not array like, it is " + str(type(1)))
+    
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs(roi_kind, cent, 5.0, height, outside_roi)  
+    excinfo.match("The given width object object is not array like, it is " + str(type(5.0)))
+        
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs(roi_kind, cent, width, '[1.0, 1.2]', outside_roi)      
+    excinfo.match("The given height object object is not array like, it is " + str(type('[1.0, 1.2]')))
+    
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs(roi_kind, [1.0, 1.2], width, height, outside_roi)  
+    excinfo.match("The cent object must have entries of integer type")
+         
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs(roi_kind, cent, ['1', 2], height, outside_roi)  
+    excinfo.match("The width object must have entries of integer type")
+           
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs(roi_kind, cent, width, [(1, 2), 2], outside_roi)  
+    excinfo.match("The height object must have entries of integer type")
+        
+    with pytest.raises(RuntimeError) as excinfo:
+        segmentation._check_roi_inputs([1, 2], cent, width, height, outside_roi)  
+    excinfo.match("The roi_kind object must have entries of type str")
