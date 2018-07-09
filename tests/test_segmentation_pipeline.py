@@ -227,3 +227,31 @@ def test_check_roi_inputs():
     with pytest.raises(RuntimeError) as excinfo:
         segmentation._check_roi_inputs([1, 2], cent, width, height, outside_roi)  
     excinfo.match("The roi_kind object must have entries of type str")
+    
+def test_check_crop_inputs():
+    
+    cent = [1, 2]
+    width = 20
+    height = 10
+    
+    cent = 0
+    with pytest.raises(RuntimeError) as excinfo:
+            segmentation._check_crop_inputs(cent, width, height)
+    excinfo.match("The given cent object is not array like, it is " + str(type(cent)))
+    
+    cent = [1, 2.0]
+    with pytest.raises(RuntimeError) as excinfo:
+            segmentation._check_crop_inputs(cent, width, height)
+    excinfo.match("The cent object must have entries of integer type")
+    
+    cent = [1, 2]
+    width = 2.0
+    with pytest.raises(RuntimeError) as excinfo:
+            segmentation._check_crop_inputs(cent, width, height)
+    excinfo.match("The width must be integer type")
+    
+    width = 20
+    height = 2.0
+    with pytest.raises(RuntimeError) as excinfo:
+            segmentation._check_crop_inputs(cent, width, height)
+    excinfo.match("The height must be integer type")

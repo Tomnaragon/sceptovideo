@@ -143,6 +143,16 @@ def _check_roi_inputs(roi_kind, cent, width, height, outside_roi):
         raise RuntimeError("The height object must have entries of integer type")
     elif not _check_numpy_array_string_types(np.array(roi_kind)):
         raise RuntimeError("The roi_kind object must have entries of type str")
+          
+def _check_crop_inputs(cent, width, height):    
+    if not _check_array_like(cent):
+        raise RuntimeError("The given cent object is not array like, it is " + str(type(cent)))
+    if not _check_numpy_array_int_types(cent):
+        raise RuntimeError("The cent object must have entries of integer type")
+    if not _check_int_types(width):
+        raise RuntimeError("The width must be integer type")
+    if not _check_int_types(height):
+        raise RuntimeError("The height must be integer type")
     
 def bg_subtract(im1, im2):
     """Function to perform background subtraction on an image
@@ -181,6 +191,36 @@ def normalize_convert_im(im):
     im_norm = im_norm / im_norm.max()
     return im_norm
 
+def crop_image_rectangle(im, cent=(50, 50), width=50, height=50):
+    """Function to return a rectangularly cropped image.
+    
+    Parameters
+    ----------
+    im : numpy.ndarray with shape (n, m) (with 0 < m, n)
+        The image (with only one color chanel) to get ROI from.
+    cent : array like integer pairs for the center of subimage region to keep
+    width : widths of cropping region from the center point given above to the edge.
+    height : height of cropping region from the center point to the top or bottom.
+    
+    Returns
+    -------
+    output : 2d numpy.ndarray with shape (2*width, 2*height)
+    """
+    
+    
+    _check_image_input(im)
+    _check_crop_inputs(cent, width, height)
+    
+    nrows, ncols = im.shape
+    centx, centy = cent
+    centy = nrows - centy
+    
+    y1, y2 = (max(centy-height, 0), centy+height)
+    x1, x2 = (centx-width, centx+width)
+    im_cropped = im[y1:y2, x1:x2]
+    
+    return im_cropped
+
 def give_roi_of_image(im, roi_kind=('rectangle',), cent=((50, 50)), width=(50,), height=(50,), outside_roi='max'):
     """Function to return an image with area outside of an ROI set to a value.
     
@@ -188,12 +228,12 @@ def give_roi_of_image(im, roi_kind=('rectangle',), cent=((50, 50)), width=(50,),
     ----------
     im : numpy.ndarray with shape (n, m) (with 0 < m, n)
         The image (with only one color chanel) to get ROI from.
-    roi_kind: array like of strings for ROI types
+    roi_kind : array like of strings for ROI types
     cent : array like of array like integer pairs for the center of ROIs
-    width : array like with widths of ROIs. Represents horizontal axis
-        width in the case of 'circle' mode of ROI.
-    height : array like with widths of ROIs. Represents horizontal axis
-        width in the case of 'circle' mode of ROI.
+    width : array like with widths of ROIs (from rectangle/circle center to left or right edge).
+        Represents horizontal axis (major or minor) in the case of 'circle' mode of ROI.
+    height : array like with heights of ROIs (from rectangle/circle center to top or bottom).
+        Represents vertical axis (major or minor) in the case of 'circle' mode of ROI.
     outside_roi : either 'max', 'min' or a value. This gives what to set
         the image region outside of the ROI.
     
