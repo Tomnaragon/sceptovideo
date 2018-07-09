@@ -184,6 +184,20 @@ def bg_subtract(im1, im2):
     return (im_no_bg)
 
 def normalize_convert_im(im):
+    """Function to normalize an image and convert it to float type.
+    Normalized image is between 0. and 1.0.
+    
+    Parameters
+    ----------
+    im : numpy.ndarray with shape (n, m) (with 0 < m, n)
+        The image (with only one color chanel) to get ROI from.
+    
+    Returns
+    -------
+    output : 2d numpy.ndarray with shape (n, m) of type float 
+    and in range of 0. to 1.0.
+    """
+    
     _check_image_input(im)
     
     im = skimage.img_as_float(im)
