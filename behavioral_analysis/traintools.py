@@ -10,8 +10,8 @@ from bokeh.events import DoubleTap
 from bokeh.models.widgets import TextInput
 from bokeh.palettes import viridis
 
-import im_click
 import segmentation
+import bootcamp_utils
 
 def _check_ims(ims):
     if not segmentation._check_array_like(ims):
@@ -38,7 +38,7 @@ def point_label(ims):
         im_num = [0,]
 
         images = ims.copy()
-        plot, source = im_click.imshow(images[im_num[-1]], return_im=True)
+        plot, source = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]], return_im=True)
         source = source.data_source
 
         renderer = plot.scatter(x='x', y='y', source=point_labels, color='white', size=3)
@@ -52,7 +52,7 @@ def point_label(ims):
 
         def callback(attr, old, new):
             im_num.append(int(new))
-            _, data = im_click.imshow(images[int(new)], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[int(new)], return_im=True)
             data = data.data_source
             source.data = data.data
             draw_tool.empty_value = im_num[-1]
@@ -60,7 +60,7 @@ def point_label(ims):
         def callback_forward():
             if (len(images) - 2) < im_num[-1]:
                 return None
-            _, data = im_click.imshow(images[im_num[-1]+1], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]+1], return_im=True)
             im_num.append(im_num[-1]+1)
             data = data.data_source
             source.data = data.data
@@ -69,7 +69,7 @@ def point_label(ims):
         def callback_backward():
             if im_num[-1] == 0:
                 return None
-            _, data = im_click.imshow(images[im_num[-1]-1], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]-1], return_im=True)
             im_num.append(im_num[-1]-1)
             data = data.data_source
             source.data = data.data
@@ -101,7 +101,7 @@ def binary_label(ims, button_left_label='beetle', button_right_label='ant'):
         im_num = [0,]
 
         images = ims.copy()
-        plot, source = im_click.imshow(images[im_num[-1]], return_im=True)
+        plot, source = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]], return_im=True)
         source = source.data_source
 
         columns = [TableColumn(field='type', title='type'),
@@ -110,14 +110,14 @@ def binary_label(ims, button_left_label='beetle', button_right_label='ant'):
 
         def callback(attr, old, new):
             im_num.append(int(new))
-            _, data = im_click.imshow(images[int(new)], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[int(new)], return_im=True)
             data = data.data_source
             source.data = data.data
 
         def callback_forward():
             if (len(images) - 2) < im_num[-1]:
                 return None
-            _, data = im_click.imshow(images[im_num[-1]+1], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]+1], return_im=True)
             im_num.append(im_num[-1]+1)
             data = data.data_source
             source.data = data.data
@@ -125,7 +125,7 @@ def binary_label(ims, button_left_label='beetle', button_right_label='ant'):
         def callback_backward():
             if im_num[-1] == 0:
                 return None
-            _, data = im_click.imshow(images[im_num[-1]-1], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]-1], return_im=True)
             im_num.append(im_num[-1]-1)
             data = data.data_source
             source.data = data.data
@@ -137,7 +137,7 @@ def binary_label(ims, button_left_label='beetle', button_right_label='ant'):
 
             if (len(images) - 2) < im_num[-1]:
                 return None
-            _, data = im_click.imshow(images[im_num[-1]+1], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]+1], return_im=True)
             im_num.append(im_num[-1]+1)
             data = data.data_source
             source.data = data.data
@@ -149,7 +149,7 @@ def binary_label(ims, button_left_label='beetle', button_right_label='ant'):
 
             if (len(images) - 2) < im_num[-1]:
                 return None
-            _, data = im_click.imshow(images[im_num[-1]+1], return_im=True)
+            _, data = bootcamp_utils.viz.bokeh_imshow(images[im_num[-1]+1], return_im=True)
             im_num.append(im_num[-1]+1)
             data = data.data_source
             source.data = data.data
