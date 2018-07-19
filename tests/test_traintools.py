@@ -14,7 +14,7 @@ def test_im_shape():
         ])
     with pytest.raises(RuntimeError) as excinfo:
         traintools._check_ims(im)
-    excinfo.match("Need to provide an array with shape \(n, m, p\). Provided array has shape \(2, 2, 2, 2\)")
+    excinfo.match("Need to provide an array with shape \(n, m\). Provided array has shape \(2, 2, 2\)")
     
 def test_ims_shape():
     ims = np.array([[[1, 2], [1, 2]], [[1, 2], [1, 2]]])
