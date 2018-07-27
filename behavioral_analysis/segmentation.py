@@ -220,6 +220,14 @@ def construct_bg_img(ims, num_ims=10, quart=75):
         background image constructed from the data
     """
     
+    if not _check_array_like(ims):
+        raise RuntimeError('Provided ims object is not array like, it is type ' + str(type(ims)))
+    
+    [_check_image_input(im) for im in ims]
+    
+    if not _check_int_types(num_ims):
+        raise RuntimeError('Please provide an integer for the num_ims parameter. Provided argument has type ' + str(type(num_ims)))
+    
     rands = np.random.randint(low=0, high=len(ims), size=num_ims)
     w = ims[0].shape[0]
     h = ims[0].shape[1]
